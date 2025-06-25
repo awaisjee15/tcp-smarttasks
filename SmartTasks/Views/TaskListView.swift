@@ -11,6 +11,7 @@ struct TaskListView: View {
     @StateObject private var taskListViewModel = TaskListViewModel()
     @State private var selectedTask: Task? = nil
     @State private var isItemClicked = false
+    @State private var selectDateTitle : Date = Date()
     
     var body: some View {
         NavigationStack {
@@ -40,7 +41,8 @@ struct TaskListView: View {
                     VStack(spacing: 10) {
                         HStack {
                             Button(action: {
-                                //action for back day
+                                taskListViewModel.goToPreviousDay()
+                                selectDateTitle = Calendar.current.date(byAdding: .day, value: -1, to: selectDateTitle)!
                             }) {
                                 Image("Arrow back")
                                     .resizable()
@@ -53,14 +55,15 @@ struct TaskListView: View {
                             
                             Spacer()
                             
-                            Text("Today")
+                            Text(dateTitle)
                                 .font(.custom("AmsiPro-Bold", size: 25))
                                 .foregroundColor(.white)
                             
                             Spacer()
                             
                             Button(action: {
-                                // action for next day
+                                taskListViewModel.goToNextDay()
+                                selectDateTitle = Calendar.current.date(byAdding: .day, value: 1, to: selectDateTitle)!
                             }) {
                                 Image("Arrow forward")
                                     .resizable()
@@ -101,14 +104,20 @@ struct TaskListView: View {
             }
         }
         
+        
+        
+        var dateTitle: String {
+            if Calendar.current.isDateInToday(selectDateTitle) {
+                    return "Today"
+                } else {
+                    let formatter = DateFormatter()
+                    formatter.dateFormat = "dd, MMM YYYY"
+                    return formatter.string(from: selectDateTitle)
+                }
+            }
+        
     }
     
-    
-    private func todayFormatted() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "EEEE, MMM d"
-        return formatter.string(from: Date())
-    }
     
 }
 

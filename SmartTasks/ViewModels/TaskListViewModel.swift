@@ -50,6 +50,14 @@ class TaskListViewModel : ObservableObject{
         }
     }
     
-    
+    func goToNextDay() {
+                selectedDate = Calendar.current.date(byAdding: .day, value: 1, to: selectedDate) ?? selectedDate
+                updateFilteredTasks()
+            }
+            
+            func goToPreviousDay() {
+                selectedDate = Calendar.current.date(byAdding: .day, value: -1, to: selectedDate) ?? selectedDate
+                updateFilteredTasks()
+            }
     
 }
