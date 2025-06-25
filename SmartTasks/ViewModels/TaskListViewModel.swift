@@ -43,21 +43,38 @@ class TaskListViewModel : ObservableObject{
         }
     }
     
+    
     func updateFilteredTasks() {
-        filteredTasks = allTasks.filter { task in
-            guard let taskDate = task.targetDateValue else { return false }
-            return Calendar.current.isDate(taskDate, inSameDayAs: selectedDate)
-        }
+        filteredTasks = allTasks
+            .filter { task in
+                guard let taskDate = task.targetDateValue else { return false }
+                return Calendar.current.isDate(taskDate, inSameDayAs: selectedDate)
+            }
+            .sorted { a, b in
+                let aPriority = a.priority ?? 0
+                let bPriority = b.priority ?? 0
+                
+                if aPriority != bPriority {
+                    return aPriority > bPriority
+                } else {
+                    guard let aDate = a.targetDateValue,
+                          let bDate = b.targetDateValue else {
+                        return false
+                    }
+                    return aDate < bDate
+                }
+            }
     }
     
+    
     func goToNextDay() {
-                selectedDate = Calendar.current.date(byAdding: .day, value: 1, to: selectedDate) ?? selectedDate
-                updateFilteredTasks()
-            }
-            
-            func goToPreviousDay() {
-                selectedDate = Calendar.current.date(byAdding: .day, value: -1, to: selectedDate) ?? selectedDate
-                updateFilteredTasks()
-            }
+        selectedDate = Calendar.current.date(byAdding: .day, value: 1, to: selectedDate) ?? selectedDate
+        updateFilteredTasks()
+    }
+    
+    func goToPreviousDay() {
+        selectedDate = Calendar.current.date(byAdding: .day, value: -1, to: selectedDate) ?? selectedDate
+        updateFilteredTasks()
+    }
     
 }
