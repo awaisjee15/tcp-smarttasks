@@ -12,6 +12,9 @@ struct TaskDetailView: View {
     
     @Environment(\.presentationMode) var presentationDetailView
     
+    @State private var taskStatus: TaskStatus = .unresolved
+    @State private var isStatusFinalized: Bool = false
+    
     var body: some View {
         ZStack {
             Color("BGColor")
@@ -62,7 +65,7 @@ struct TaskDetailView: View {
                             
                             SectionDivider()
                             
-                            Text("Unresolved")
+                            Text(statusText(for: taskStatus))
                                 .font(.custom("AmsiPro-Bold", size: 15))
                                 .foregroundColor(.orange)
                                 .padding(.horizontal, 10)
@@ -73,18 +76,35 @@ struct TaskDetailView: View {
                     }
                 }
                 .frame(height: UIScreen.main.bounds.height * 0.5)
-                
-                HStack(spacing: 20) {
-                    ActionButton(title: "Resolve", backgroundColor: .green) {
-                        // Reslove button action
+                if !isStatusFinalized {
+                    HStack(spacing: 20) {
+                        ActionButton(title: "Resolve", backgroundColor: .green) {
+                            taskStatus = .resolved
+                            isStatusFinalized = true
+                            TaskStatusManager.setStatus(.resolved, for: task.id ?? "")
+                        }
+                        
+                        ActionButton(title: "Cannot Resolve", backgroundColor: .red) {
+                            taskStatus = .cannotResolve
+                            isStatusFinalized = true
+                            TaskStatusManager.setStatus(.cannotResolve, for: task.id ?? "")
+                        }
                     }
-                    
-                    ActionButton(title: "Cannot Resolve", backgroundColor: .red) {
-                        // Cannot Resolve button action
-                    }
+                    .padding(.horizontal)
+                    .padding(.bottom, (UIScreen.main.bounds.height * UIScreen.main.scale) * 0.08)
                 }
-                .padding(.horizontal)
-                .padding(.bottom, (UIScreen.main.bounds.height * UIScreen.main.scale) * 0.08)
+                else{
+                    let imageName = taskStatus == .resolved ? "Resolved sign" : "Unresolved sign"
+                    HStack(spacing: 20) {
+                        Spacer()
+                        Image(imageName)
+                            .resizable()
+                            .frame(width: 40, height: 40)
+                            .padding()
+                        Spacer()
+                    }.padding(.horizontal)
+                        .padding(.bottom, (UIScreen.main.bounds.height * UIScreen.main.scale) * 0.08)
+                }
             }
         }.navigationBarTitle("Task Detail", displayMode: .inline)
             .navigationBarBackButtonHidden(true)
@@ -104,6 +124,9 @@ struct TaskDetailView: View {
             }
             .foregroundColor(.white)
             .onAppear {
+                let status = TaskStatusManager.getStatus(for: task.id ?? "")
+                taskStatus = status
+                isStatusFinalized = (status != .unresolved)
                 if let customFont = UIFont(name: "AmsiPro-Bold", size: 22) {
                     UINavigationBar.appearance().titleTextAttributes = [
                         .font: customFont,
@@ -112,6 +135,17 @@ struct TaskDetailView: View {
                     UINavigationBar.appearance().largeTitleTextAttributes = [.foregroundColor: UIColor.white]
                 }
             }
+    }
+    
+    private func statusText(for status: TaskStatus) -> String {
+        switch status {
+        case .resolved:
+            return "Resolved"
+        case .cannotResolve:
+            return "Cannot Resolve"
+        case .unresolved:
+            return "Unresolved"
+        }
     }
 }
 
